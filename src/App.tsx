@@ -1,16 +1,8 @@
-import { createContext, Fragment, useContext, useState } from "react";
 import clsx from "clsx";
+import { createContext, useState } from "react";
 
-import { Graph } from "./graph";
-
-// import lineImg from "./assets/line.svg";
-// import lineJunctionImg from "./assets/line-junction.svg";
-import lineEndImg from "./assets/line-end.svg";
-
-const empty = <div className="h-10 w-10"></div>;
-const end = <img src={lineEndImg} />;
-// const junction = <img src={lineJunctionImg} />;
-// const line = <img src={lineImg} />;
+import { ChildrenStrategy, Graph } from "./graph";
+import Node from "./Node";
 
 const edges = new Map([
   ["a", ["b", "d"]],
@@ -20,61 +12,36 @@ const edges = new Map([
 ]);
 const graph = new Graph(edges);
 
-interface NodeProps {
-  vertex: string;
-  path?: Array<string>;
-  shouldOpen?: boolean;
-}
-
-function Node({ vertex, path = [], shouldOpen = false }: NodeProps) {
-  const settings = useContext(SettingsContext);
-  const [isOpen, setOpen] = useState(shouldOpen);
-
-  const toggleVertex = () => setOpen((prevOpen) => !prevOpen);
-
-  const isDisabled = path.includes(vertex);
-  const label = settings.showPath ? `${vertex} (${path.join(", ")})` : vertex;
-
-  return (
-    <>
-      <div className="flex">
-        {path.map((vertex, index) =>
-          path.length - 1 !== index ? (
-            <Fragment key={vertex}>{empty}</Fragment>
-          ) : (
-            <Fragment key={vertex}>{end}</Fragment>
-          )
-        )}
-        <button
-          className={clsx(
-            "min-w-[40px] text-2xl text-center font-bold leading-10 capitalize cursor-pointer",
-            isDisabled && "text-gray-500"
-          )}
-          onClick={toggleVertex}
-          disabled={isDisabled}
-        >
-          {label}
-        </button>
-      </div>
-      {isOpen &&
-        graph
-          .getVertexConnections(vertex)
-          // .getVertexChildren(vertex, path[path.length - 1])
-          .map((cVertex) => (
-            <Node key={cVertex} vertex={cVertex} path={[...path, vertex]} />
-          ))}
-    </>
-  );
-}
-
+const childrenStrategies = [
+  ChildrenStrategy.ALL_CONNECTIONS,
+  ChildrenStrategy.HIDE_PARENT,
+];
+const childrenStrategyLabel = {
+  [ChildrenStrategy.ALL_CONNECTIONS]: "Showing All Connections",
+  [ChildrenStrategy.HIDE_PARENT]: "Hiding Parent",
+};
 const settingsDefaults = {
+  graph,
+  childrenStrategy: ChildrenStrategy.ALL_CONNECTIONS,
   showPath: false,
 };
 
-const SettingsContext = createContext(settingsDefaults);
+export const SettingsContext = createContext(settingsDefaults);
 
 function App() {
+  const [childrenStrategy, setChildrenStrategy] = useState(
+    settingsDefaults.childrenStrategy
+  );
   const [showPath, setShowPath] = useState(settingsDefaults.showPath);
+
+  const toggleChildrenStrategy = () => {
+    setChildrenStrategy((prevChildrenStrategy) => {
+      const nextChildrenStrategy =
+        (prevChildrenStrategy + 1) % childrenStrategies.length;
+      graph.setChildrenStrategy(childrenStrategies[nextChildrenStrategy]);
+      return nextChildrenStrategy;
+    });
+  };
 
   const toggleShowPath = () => setShowPath((prevShowPath) => !prevShowPath);
   const toggleShowPathLabel = showPath ? "Hide paths" : "Show paths";
@@ -85,16 +52,22 @@ function App() {
         <div className="mb-2 text-3xl font-bold">Settings</div>
         <button
           className={clsx(
-            "px-4 py-2 rounded-xl border-2 border-black",
+            "px-4 py-2 rounded-xl border-2 border-black mr-2",
             showPath && "bg-black text-white"
           )}
           onClick={toggleShowPath}
         >
           {toggleShowPathLabel}
         </button>
+        <button
+          className={clsx("px-4 py-2 rounded-xl border-2 border-black mr-2")}
+          onClick={toggleChildrenStrategy}
+        >
+          {childrenStrategyLabel[childrenStrategy]}
+        </button>
       </div>
 
-      <SettingsContext.Provider value={{ showPath }}>
+      <SettingsContext.Provider value={{ graph, childrenStrategy, showPath }}>
         <div className="flex flex-col">
           <Node vertex="a" shouldOpen />
         </div>

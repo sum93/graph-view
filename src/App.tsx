@@ -1,16 +1,11 @@
 import clsx from "clsx";
 import { createContext, useState } from "react";
 
+import examples, { exampleImgMap } from "./examples";
 import { ChildrenStrategy, Graph } from "./graph";
 import Node from "./Node";
 
-const edges = new Map([
-  ["a", ["b", "d"]],
-  ["b", ["a", "c"]],
-  ["c", ["b"]],
-  ["d", ["a", "c"]],
-]);
-const graph = new Graph(edges);
+const graph = new Graph(examples[0]);
 
 const childrenStrategies = [
   ChildrenStrategy.ALL_CONNECTIONS,
@@ -20,6 +15,7 @@ const childrenStrategyLabel = {
   [ChildrenStrategy.ALL_CONNECTIONS]: "Showing All Connections",
   [ChildrenStrategy.HIDE_PARENT]: "Hiding Parent",
 };
+
 const settingsDefaults = {
   graph,
   childrenStrategy: ChildrenStrategy.ALL_CONNECTIONS,
@@ -29,11 +25,15 @@ const settingsDefaults = {
 export const SettingsContext = createContext(settingsDefaults);
 
 function App() {
+  const [exampleIndex, setExampleIndex] = useState(0);
+  const handleSelectExample = (index: number) => {
+    graph.setEdges(examples[index]);
+    setExampleIndex(index);
+  };
+
   const [childrenStrategy, setChildrenStrategy] = useState(
     settingsDefaults.childrenStrategy
   );
-  const [showPath, setShowPath] = useState(settingsDefaults.showPath);
-
   const toggleChildrenStrategy = () => {
     setChildrenStrategy((prevChildrenStrategy) => {
       const nextChildrenStrategy =
@@ -43,28 +43,48 @@ function App() {
     });
   };
 
+  const [showPath, setShowPath] = useState(settingsDefaults.showPath);
   const toggleShowPath = () => setShowPath((prevShowPath) => !prevShowPath);
   const toggleShowPathLabel = showPath ? "Hide paths" : "Show paths";
 
   return (
     <div className="m-10">
       <div className="mb-10">
+        <div className="mb-2 text-3xl font-bold">Examples</div>
+        <div className="flex flex-wrap gap-4">
+          {exampleImgMap.map((img, index) => (
+            <img
+              className={clsx(
+                "max-w-[250px] border-4 cursor-pointer",
+                index === exampleIndex ? "border-solid" : "border-dashed"
+              )}
+              key={index}
+              src={img}
+              onClick={() => handleSelectExample(index)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-10">
         <div className="mb-2 text-3xl font-bold">Settings</div>
-        <button
-          className={clsx(
-            "px-4 py-2 rounded-xl border-2 border-black mr-2",
-            showPath && "bg-black text-white"
-          )}
-          onClick={toggleShowPath}
-        >
-          {toggleShowPathLabel}
-        </button>
-        <button
-          className={clsx("px-4 py-2 rounded-xl border-2 border-black mr-2")}
-          onClick={toggleChildrenStrategy}
-        >
-          {childrenStrategyLabel[childrenStrategy]}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            className={clsx(
+              "px-4 py-2 rounded-xl border-2 border-black",
+              showPath && "bg-black text-white"
+            )}
+            onClick={toggleShowPath}
+          >
+            {toggleShowPathLabel}
+          </button>
+          <button
+            className={clsx("px-4 py-2 rounded-xl border-2 border-black")}
+            onClick={toggleChildrenStrategy}
+          >
+            {childrenStrategyLabel[childrenStrategy]}
+          </button>
+        </div>
       </div>
 
       <SettingsContext.Provider value={{ graph, childrenStrategy, showPath }}>

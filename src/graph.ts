@@ -13,6 +13,10 @@ export class Graph {
     this.childrenStrategy = ChildrenStrategy.ALL_CONNECTIONS;
   }
 
+  setEdges(edges: EdgeMap) {
+    this.edges = edges;
+  }
+
   setChildrenStrategy(strategy: ChildrenStrategy) {
     this.childrenStrategy = strategy;
   }

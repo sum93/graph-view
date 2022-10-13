@@ -19,6 +19,7 @@ const childrenStrategyLabel = {
 const settingsDefaults = {
   graph,
   childrenStrategy: ChildrenStrategy.ALL_CONNECTIONS,
+  isAllOpen: false,
   showPath: false,
 };
 
@@ -31,6 +32,14 @@ function App() {
     setExampleIndex(index);
   };
 
+  const [isAllOpen, setAllOpen] = useState(settingsDefaults.isAllOpen);
+  const toggleOpenAll = () => setAllOpen((prevOpenAll) => !prevOpenAll);
+  const toggleOpenAllLabel = isAllOpen ? "Condense all" : "Expand all";
+
+  const [showPath, setShowPath] = useState(settingsDefaults.showPath);
+  const toggleShowPath = () => setShowPath((prevShowPath) => !prevShowPath);
+  const toggleShowPathLabel = showPath ? "Hide paths" : "Show paths";
+
   const [childrenStrategy, setChildrenStrategy] = useState(
     settingsDefaults.childrenStrategy
   );
@@ -42,10 +51,6 @@ function App() {
       return nextChildrenStrategy;
     });
   };
-
-  const [showPath, setShowPath] = useState(settingsDefaults.showPath);
-  const toggleShowPath = () => setShowPath((prevShowPath) => !prevShowPath);
-  const toggleShowPathLabel = showPath ? "Hide paths" : "Show paths";
 
   return (
     <div className="m-10">
@@ -72,12 +77,23 @@ function App() {
           <button
             className={clsx(
               "px-4 py-2 rounded-xl border-2 border-black",
+              isAllOpen && "bg-black text-white"
+            )}
+            onClick={toggleOpenAll}
+          >
+            {toggleOpenAllLabel}
+          </button>
+
+          <button
+            className={clsx(
+              "px-4 py-2 rounded-xl border-2 border-black",
               showPath && "bg-black text-white"
             )}
             onClick={toggleShowPath}
           >
             {toggleShowPathLabel}
           </button>
+
           <button
             className={clsx("px-4 py-2 rounded-xl border-2 border-black")}
             onClick={toggleChildrenStrategy}
@@ -87,7 +103,9 @@ function App() {
         </div>
       </div>
 
-      <SettingsContext.Provider value={{ graph, childrenStrategy, showPath }}>
+      <SettingsContext.Provider
+        value={{ graph, childrenStrategy, isAllOpen, showPath }}
+      >
         <div className="flex flex-col">
           <Node vertex="a" shouldOpen />
         </div>

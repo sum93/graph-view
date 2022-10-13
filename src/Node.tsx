@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { Fragment, useContext, useState } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 
 import { SettingsContext } from "./App";
 
@@ -19,8 +19,18 @@ interface NodeProps {
 }
 
 function Node({ vertex, path = [], shouldOpen = false }: NodeProps) {
-  const { graph, showPath } = useContext(SettingsContext);
+  const { graph, isAllOpen, showPath } = useContext(SettingsContext);
   const [isOpen, setOpen] = useState(shouldOpen);
+
+  useEffect(() => {
+    if (
+      !path.includes(vertex) &&
+      graph.getNodeChildren(vertex, path).length !== 0 &&
+      !shouldOpen
+    ) {
+      setOpen(isAllOpen);
+    }
+  }, [isAllOpen]);
 
   const toggleVertex = () => setOpen((prevOpen) => !prevOpen);
 

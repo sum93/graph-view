@@ -60,7 +60,7 @@ function App() {
           {exampleImgMap.map((img, index) => (
             <img
               className={clsx(
-                "max-w-[250px] border-4 cursor-pointer",
+                "max-h-[250px] border-4 cursor-pointer hover:bg-gray-200",
                 index === exampleIndex ? "border-solid" : "border-dashed"
               )}
               key={index}
@@ -107,7 +107,7 @@ function App() {
         value={{ graph, childrenStrategy, isAllOpen, showPath }}
       >
         <div className="flex flex-col">
-          <Node vertex="a" shouldOpen />
+          <Node vertex={exampleIndex === 2 ? "*" : "a"} shouldOpen />
         </div>
       </SettingsContext.Provider>
     </div>

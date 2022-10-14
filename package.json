@@ -7,13 +7,13 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "deploy": "aws s3 cp ./dist s3://justiction-gp --recursive --profile full-access-s3"
+    "deploy": "aws s3 cp ./dist s3://graph-view-c6a2a918-4af0-11ed-b878-0242ac120002 --recursive --profile full-access-s3"
   },
   "dependencies": {
     "clsx": "^1.2.1",
-    "dotty": "^0.1.2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "strongly-connected-components": "^1.0.1"
   },
   "devDependencies": {
     "@types/react": "^18.0.17",

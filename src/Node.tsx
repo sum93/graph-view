@@ -20,13 +20,16 @@ interface NodeProps {
 
 function Node({ vertex, path = [], shouldOpen = false }: NodeProps) {
   const { graph, isAllOpen, showPath } = useContext(SettingsContext);
-  const [isOpen, setOpen] = useState(shouldOpen);
+  const [isOpen, setOpen] = useState(
+    shouldOpen || ["*", "p1", "p2", "p3", "a"].includes(vertex)
+  );
 
   useEffect(() => {
     if (
       !path.includes(vertex) &&
       graph.getNodeChildren(vertex, path).length !== 0 &&
-      !shouldOpen
+      !shouldOpen &&
+      !["*", "p1", "p2", "p3", "a"].includes(vertex)
     ) {
       setOpen(isAllOpen);
     }
@@ -38,6 +41,8 @@ function Node({ vertex, path = [], shouldOpen = false }: NodeProps) {
   const isLastPath = graph.getIsLastPath(vertex, path);
   const isDisabled = path.includes(vertex) || children.length === 0;
   const label = showPath ? `${vertex} (${path.join(", ")})` : vertex;
+
+  console.log(vertex, isOpen, children);
 
   return (
     <>

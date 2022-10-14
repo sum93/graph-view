@@ -1,43 +1,65 @@
-import loopImg from "./assets/loops.svg";
-import multiplePathsImg from "./assets/multiple-paths.svg";
-// import parentsImg from "./assets/parents.svg";
+import scc from "strongly-connected-components";
 
-// Loops
-const loopsEdges = new Map([
-  ["a", ["b", "d"]],
-  ["b", ["a", "c"]],
-  ["c", ["b", "d"]],
-  ["d", ["a", "c"]],
+import undirectedImg from "./assets/undirected.svg";
+import directedImg from "./assets/directed.svg";
+import parentsImg from "./assets/parents.svg";
+
+// Undirected
+const undirected = new Map([
+  ["a", ["b", "c", "d"]],
+  ["b", ["a", "c", "d"]],
+  ["c", ["a", "b", "d"]],
+  ["d", ["a", "b", "c"]],
 ]);
 
 // Multiple Paths
-const multiplePathsEdges = new Map([
-  ["a", ["b", "c", "d"]],
-  ["b", ["a", "c", "d"]],
-  ["c", ["a", "b", "d", "e"]],
-  ["d", ["a", "b", "c", "e"]],
-  ["e", ["c", "d"]],
+const directed = new Map([
+  ["a", ["b", "c"]],
+  ["b", ["c", "d"]],
+  ["c", ["a", "d"]],
+  ["d", ["a", "b"]],
 ]);
 
 // Parents
-// const parentsEdges = new Map([
-//   ["a", ["b", "c", "d"]],
-//   ["b", ["a", "c", "d"]],
-//   ["c", ["a", "b", "d", "e"]],
-//   ["d", ["a", "b", "c", "e"]],
-//   ["e", ["c", "d"]],
-// ]);
+const parents = new Map([
+  ["*", ["p1", "p2", "p3"]],
+  ["p1", ["p2"]],
+  ["p2", ["p3", "a"]],
+  ["p3", ["a"]],
+  ["a", ["b", "c"]],
+  ["b", ["c", "d"]],
+  ["c", ["a", "d"]],
+  ["d", ["a", "b"]],
+]);
 
-const examples = [
-  loopsEdges,
-  multiplePathsEdges,
-  // parentsEdges,
-];
+const [encodeMap, decodeMap]: Array<Record<string, string>> = Array.from(
+  parents.keys()
+).reduce(
+  ([encodeMap, decodeMap], key, index) => [
+    { ...encodeMap, [key]: index },
+    { ...decodeMap, [index]: key },
+  ],
+  [{}, {}]
+);
+const transformedEdges = Array.from(parents.entries()).map(([, edges]) =>
+  edges.map((vertex) => encodeMap[vertex])
+);
+const stronglyConnectedComponents = Object.entries(
+  scc(transformedEdges)
+).reduce(
+  (accumulator, [propertyName, entry]) => ({
+    ...accumulator,
+    [propertyName]: entry.map((adjacent: Array<string>) =>
+      adjacent.map((key: string) => decodeMap[key])
+    ),
+  }),
+  {}
+);
 
-export const exampleImgMap = [
-  loopImg,
-  multiplePathsImg,
-  // parentsImg,
-];
+console.log(stronglyConnectedComponents);
+
+const examples = [undirected, directed, parents];
+
+export const exampleImgMap = [undirectedImg, directedImg, parentsImg];
 
 export default examples;

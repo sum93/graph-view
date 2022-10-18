@@ -1,37 +1,22 @@
 import clsx from "clsx";
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 
 import examples, { exampleImgMap } from "./examples";
-import { ChildrenStrategy, Graph } from "./graph";
+import Graph from "./Graph";
+
 import Node from "./Node";
 
 const graph = new Graph(examples[0]);
 
-const childrenStrategies = [
-  ChildrenStrategy.ALL_CONNECTIONS,
-  ChildrenStrategy.HIDE_PARENT,
-];
-const childrenStrategyLabel = {
-  [ChildrenStrategy.ALL_CONNECTIONS]: "Showing All Connections",
-  [ChildrenStrategy.HIDE_PARENT]: "Hiding Parent",
-};
-
 const settingsDefaults = {
-  graph,
-  childrenStrategy: ChildrenStrategy.ALL_CONNECTIONS,
   isAllOpen: false,
   showPath: false,
+  withParents: false,
 };
 
 export const SettingsContext = createContext(settingsDefaults);
 
 function App() {
-  const [exampleIndex, setExampleIndex] = useState(0);
-  const handleSelectExample = (index: number) => {
-    graph.setEdges(examples[index]);
-    setExampleIndex(index);
-  };
-
   const [isAllOpen, setAllOpen] = useState(settingsDefaults.isAllOpen);
   const toggleOpenAll = () => setAllOpen((prevOpenAll) => !prevOpenAll);
   const toggleOpenAllLabel = isAllOpen ? "Condense all" : "Expand all";
@@ -40,17 +25,24 @@ function App() {
   const toggleShowPath = () => setShowPath((prevShowPath) => !prevShowPath);
   const toggleShowPathLabel = showPath ? "Hide paths" : "Show paths";
 
-  const [childrenStrategy, setChildrenStrategy] = useState(
-    settingsDefaults.childrenStrategy
-  );
+  const [exampleIndex, setExampleIndex] = useState(0);
+  const handleSelectExample = setExampleIndex;
+
+  const [withParents, setWithParents] = useState(settingsDefaults.withParents);
   const toggleChildrenStrategy = () => {
-    setChildrenStrategy((prevChildrenStrategy) => {
-      const nextChildrenStrategy =
-        (prevChildrenStrategy + 1) % childrenStrategies.length;
-      graph.setChildrenStrategy(childrenStrategies[nextChildrenStrategy]);
-      return nextChildrenStrategy;
-    });
+    setWithParents((prevWithParents) => !prevWithParents);
   };
+  const withParentsLabel = withParents
+    ? "With Parents Connections"
+    : "Without Parents Connections";
+
+  const [tree, setTree] = useState(graph.getTree("a"));
+  useEffect(() => {
+    graph.setEdges(examples[exampleIndex]);
+    graph.setSettings({ withParents });
+
+    setTree(graph.getTree(exampleIndex === 2 ? "*" : "a"));
+  }, [exampleIndex, withParents]);
 
   return (
     <div className="m-10">
@@ -98,16 +90,14 @@ function App() {
             className={clsx("px-4 py-2 rounded-xl border-2 border-black")}
             onClick={toggleChildrenStrategy}
           >
-            {childrenStrategyLabel[childrenStrategy]}
+            {withParentsLabel}
           </button>
         </div>
       </div>
 
-      <SettingsContext.Provider
-        value={{ graph, childrenStrategy, isAllOpen, showPath }}
-      >
+      <SettingsContext.Provider value={{ withParents, isAllOpen, showPath }}>
         <div className="flex flex-col">
-          <Node vertex={exampleIndex === 2 ? "*" : "a"} shouldOpen />
+          <Node data={tree} />
         </div>
       </SettingsContext.Provider>
     </div>

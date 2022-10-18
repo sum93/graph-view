@@ -1,6 +1,7 @@
 import clsx from "clsx";
 import { Fragment, useContext, useEffect, useState } from "react";
 
+import { INode } from "./Graph";
 import { SettingsContext } from "./App";
 
 import endImg from "./assets/line-end.svg";
@@ -13,43 +14,31 @@ const junction = <img src={junctionImg} />;
 const line = <img src={lineImg} />;
 
 interface NodeProps {
-  vertex: string;
-  path?: Array<string>;
-  shouldOpen?: boolean;
+  data: INode;
 }
 
-function Node({ vertex, path = [], shouldOpen = false }: NodeProps) {
-  const { graph, isAllOpen, showPath } = useContext(SettingsContext);
-  const [isOpen, setOpen] = useState(
-    shouldOpen || ["*", "p1", "p2", "p3", "a"].includes(vertex)
-  );
+function Node({
+  data: { vertex, path, pathDetails, children, isLeaf, shouldOpen },
+}: NodeProps) {
+  const { isAllOpen, showPath } = useContext(SettingsContext);
+
+  const [isOpen, setOpen] = useState(shouldOpen);
+  const toggleVertex = () => setOpen((prevOpen) => !prevOpen);
 
   useEffect(() => {
-    if (
-      !path.includes(vertex) &&
-      graph.getNodeChildren(vertex, path).length !== 0 &&
-      !shouldOpen &&
-      !["*", "p1", "p2", "p3", "a"].includes(vertex)
-    ) {
+    if (!isLeaf && !shouldOpen) {
       setOpen(isAllOpen);
     }
   }, [isAllOpen]);
 
-  const toggleVertex = () => setOpen((prevOpen) => !prevOpen);
-
-  const children = graph.getNodeChildren(vertex, path);
-  const isLastPath = graph.getIsLastPath(vertex, path);
-  const isDisabled = path.includes(vertex) || children.length === 0;
   const label = showPath ? `${vertex} (${path.join(", ")})` : vertex;
-
-  console.log(vertex, isOpen, children);
 
   return (
     <>
       <div className="flex">
-        {isLastPath.map((isLast, index) => (
+        {pathDetails.map(({ isLast }, index) => (
           <Fragment key={index}>
-            {isLastPath.length - 1 !== index
+            {path.length - 1 !== index
               ? isLast
                 ? empty
                 : line
@@ -61,18 +50,15 @@ function Node({ vertex, path = [], shouldOpen = false }: NodeProps) {
         <button
           className={clsx(
             "min-w-[40px] text-2xl text-center font-bold leading-10 capitalize cursor-pointer",
-            isDisabled && "text-gray-400"
+            isLeaf && "text-gray-400"
           )}
           onClick={toggleVertex}
-          disabled={isDisabled}
+          disabled={isLeaf}
         >
           {label}
         </button>
       </div>
-      {isOpen &&
-        children.map((cVertex) => (
-          <Node key={cVertex} vertex={cVertex} path={[...path, vertex]} />
-        ))}
+      {isOpen && children.map((node) => <Node key={node.vertex} data={node} />)}
     </>
   );
 }

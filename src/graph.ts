@@ -76,7 +76,6 @@ class Graph {
 
   setEdges(edges: EdgeRecord) {
     this.edges = Graph.transformEdges(edges);
-    console.log(edges, this.edges);
   }
 
   setSettings(settings: Partial<Settings>) {
@@ -98,7 +97,10 @@ class Graph {
       this.edges[vertex].out
     );
 
-    return children.filter((v) => v !== path[path.length - 1]);
+    return children.filter(
+      (v) =>
+        v !== path[path.length - 1] && !(this.settings.withParents && v === "*")
+    );
   }
 
   getPathDetails(vertex: string, path: Array<string>): Array<PathDetail> {

@@ -20,10 +20,10 @@ interface NodeProps {
 function Node({
   data: { vertex, path, pathDetails, children, isLeaf, shouldOpen },
 }: NodeProps) {
-  const { isAllOpen, showPath } = useContext(SettingsContext);
+  const { isAllOpen, withPath } = useContext(SettingsContext);
 
   const [isOpen, setOpen] = useState(shouldOpen);
-  const toggleVertex = () => setOpen((prevOpen) => !prevOpen);
+  const toggleOpen = () => setOpen((prevOpen) => !prevOpen);
 
   useEffect(() => {
     if (!isLeaf && !shouldOpen) {
@@ -31,7 +31,7 @@ function Node({
     }
   }, [isAllOpen]);
 
-  const label = showPath ? `${vertex} (${path.join(", ")})` : vertex;
+  const label = withPath ? `${vertex} (${path.join(", ")})` : vertex;
 
   return (
     <>
@@ -52,7 +52,7 @@ function Node({
             "min-w-[40px] text-2xl text-center font-bold leading-10 capitalize cursor-pointer",
             isLeaf && "text-gray-400"
           )}
-          onClick={toggleVertex}
+          onClick={toggleOpen}
           disabled={isLeaf}
         >
           {label}

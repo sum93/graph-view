@@ -4,32 +4,33 @@ import { createContext, useEffect, useState } from "react";
 import examples, { exampleImgMap } from "./examples";
 import Graph from "./Graph";
 
+import ToggleButton from "./Button";
 import Node from "./Node";
 
 const graph = new Graph(examples[0]);
 
 const settingsDefaults = {
   isAllOpen: false,
-  showPath: false,
+  withPath: false,
   withParents: false,
 };
 
 export const SettingsContext = createContext(settingsDefaults);
 
 function App() {
-  const [isAllOpen, setAllOpen] = useState(settingsDefaults.isAllOpen);
-  const toggleOpenAll = () => setAllOpen((prevOpenAll) => !prevOpenAll);
-  const toggleOpenAllLabel = isAllOpen ? "Condense all" : "Expand all";
-
-  const [showPath, setShowPath] = useState(settingsDefaults.showPath);
-  const toggleShowPath = () => setShowPath((prevShowPath) => !prevShowPath);
-  const toggleShowPathLabel = showPath ? "Hide paths" : "Show paths";
-
   const [exampleIndex, setExampleIndex] = useState(0);
   const handleSelectExample = setExampleIndex;
 
+  const [isAllOpen, setAllOpen] = useState(settingsDefaults.isAllOpen);
+  const toggleOpenAll = () => setAllOpen((prevOpenAll) => !prevOpenAll);
+  const openAllLabel = isAllOpen ? "Condense all" : "Expand all";
+
+  const [withPath, setWithPath] = useState(settingsDefaults.withPath);
+  const toggleWithPath = () => setWithPath((prevShowPath) => !prevShowPath);
+  const withPathLabel = withPath ? "Hide paths" : "Show paths";
+
   const [withParents, setWithParents] = useState(settingsDefaults.withParents);
-  const toggleChildrenStrategy = () => {
+  const toggleWithParents = () => {
     setWithParents((prevWithParents) => !prevWithParents);
   };
   const withParentsLabel = withParents
@@ -51,12 +52,12 @@ function App() {
         <div className="flex flex-wrap gap-4">
           {exampleImgMap.map((img, index) => (
             <img
+              key={index}
+              src={img}
               className={clsx(
                 "max-h-[250px] border-4 cursor-pointer hover:bg-gray-200",
                 index === exampleIndex ? "border-solid" : "border-dashed"
               )}
-              key={index}
-              src={img}
               onClick={() => handleSelectExample(index)}
             />
           ))}
@@ -66,36 +67,21 @@ function App() {
       <div className="mb-10">
         <div className="mb-2 text-3xl font-bold">Settings</div>
         <div className="flex flex-wrap gap-2">
-          <button
-            className={clsx(
-              "px-4 py-2 rounded-xl border-2 border-black",
-              isAllOpen && "bg-black text-white"
-            )}
-            onClick={toggleOpenAll}
-          >
-            {toggleOpenAllLabel}
-          </button>
+          <ToggleButton isActive={isAllOpen} onClick={toggleOpenAll}>
+            {openAllLabel}
+          </ToggleButton>
 
-          <button
-            className={clsx(
-              "px-4 py-2 rounded-xl border-2 border-black",
-              showPath && "bg-black text-white"
-            )}
-            onClick={toggleShowPath}
-          >
-            {toggleShowPathLabel}
-          </button>
+          <ToggleButton isActive={withPath} onClick={toggleWithPath}>
+            {withPathLabel}
+          </ToggleButton>
 
-          <button
-            className={clsx("px-4 py-2 rounded-xl border-2 border-black")}
-            onClick={toggleChildrenStrategy}
-          >
+          <ToggleButton isActive={withParents} onClick={toggleWithParents}>
             {withParentsLabel}
-          </button>
+          </ToggleButton>
         </div>
       </div>
 
-      <SettingsContext.Provider value={{ withParents, isAllOpen, showPath }}>
+      <SettingsContext.Provider value={{ withParents, isAllOpen, withPath }}>
         <div className="flex flex-col">
           <Node data={tree} />
         </div>
